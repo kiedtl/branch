@@ -8,6 +8,6 @@ pub fn error(stuff: String) {
 
 pub fn die(stuff: String) {
     error(stuff);
-    error("previous error not recoverable; aborting.");
+    error("previous error not recoverable; aborting.".to_string());
     std::process::exit(1);
 }

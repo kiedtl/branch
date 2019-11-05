@@ -13,34 +13,41 @@ use crate::outp::die;
 // get listing of contents of this
 // directory
 fn tree(directory: String, threadct: i32) -> Vec<String> {
-    let mut contents = vec![];
+    let mut contents: Vec<String> = Vec::new();
 
     for thing in WalkDir::new(&*directory)
         .sort(true)
-        .num_threads(threadct)
+        .num_threads(threadct as usize)
     {
-        contents.push(thing.path().display());
+        contents.push(thing
+                      .unwrap()
+                      .path()
+                      .display()
+                      .to_string());
     }
 
     return contents
 }
 
 pub fn branch(matches: &ArgMatches) {
-    let mut directory: String = env::current_dir().unwrap();
+    let mut directory: String = env::current_dir()
+        .unwrap()
+        .display()
+        .to_string();
     let mut threadct: i32 = 1;
 
     // get directory
-    if let Some(dir) = matches.value_of("PATH").unwrap().to_owned() {
-        directory = dir;
+    if let Some(dir) = matches.value_of("PATH") {
+        directory = dir.to_string();
     }
 
     // check that directory exists
-    if ! fs::metadata(directory).is_ok() {
+    if ! fs::metadata(&directory).is_ok() {
         die(format!("directory {} does not exist.", directory));
     }
 
     // check that the thing is a directory 
-    if ! std::path::Path::new(directory).is_dir() {
+    if ! Path::new(&directory).is_dir() {
         die(format!("path {} isn't a directory.", directory));
     }
 
