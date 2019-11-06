@@ -15,59 +15,56 @@ use crate::outp::*;
 const E: char = 27 as char;
 const branch_str: &str = "├── ";
 
-fn display(thing: &String, isdir: bool, master_depth: usize) -> String {
-    let path = thing.split("/").collect::<Vec<_>>();
-    let mut nesting: String = "".to_string();
-    let mut nestend: String = "".to_string();
+#[derive(Debug)]
+struct TreeEntry {
+    name: String,
+    is_dir: bool,
+    is_symlink: bool,
+}
 
-    for _ in 0..path.len() - master_depth {
-        nesting = nesting + "│  ";
-        nestend = nestend + "──┘";
+fn display(things: Vec<TreeEntry>, master_dir: String) {
+    let mut depth = 0;
+    for ctr in 0..things.len() {
+        let thing = &things[ctr];
+        let relative_path = &*thing.name.replace(&master_dir, "");
+        let relative_name = &*relative_path.split('/').collect::<Vec<_>>();
+        depth = relative_name.len();
+        for _ in 0..depth { print!("\t"); }
+        println!("{}", relative_name[relative_name.len()-1]);
     }
-
-    if isdir {
-        print!(" {}{}{}[1;34m{}/\n{}[0m", nesting, branch_str, E, path[path.len() -2], E);
-    } else {
-        print!(" {}{}{}\n", nesting, branch_str, path[path.len() -1]);
-    }
-    
-    return nestend
+    //print!(" └{}\n", nestend);
 }
 
 // get listing of contents of this
 // directory
-fn tree(directory: String, threadct: i32, master_depth: usize) -> result::Result<String, io::Error> {
-    // we will display this when the program has finished
-    let mut nestend: String = "".to_string();
-
-    nestend = display(&directory, true, master_depth);
-
-    // jwalk is more a liability than an asset
-    // when only one thread is used, so we shall
-    // walk the file tree ourselved in that case.
-    if threadct > 1 {
-        for thing in WalkDir::new(&*directory)
-            .sort(true)
-            .num_threads(threadct as usize) {
-                let entry = &thing;
-                if entry.as_ref().unwrap().path().is_dir() { 
-                    nestend = display(&thing.unwrap().path().display().to_string(), true, master_depth);
-                } else {
-                    nestend = display(&thing.unwrap().path().display().to_string(), false, master_depth);
-                }
-        }
-    } else {
-        for thing in fs::read_dir(Path::new(&directory))? {
-            let thing = thing?;
-            if thing.path().is_dir() {
-                tree(thing.path().display().to_string(), threadct, master_depth)?;
-            } else {
-                nestend = display(&thing.path().display().to_string(), false, master_depth);
+fn tree(directory: String, threadct: i32) -> result::Result<Vec<TreeEntry>, io::Error> {
+    let mut entries: Vec<TreeEntry> = Vec::new();
+    entries.push(TreeEntry {
+            name: directory.clone(),
+            is_dir: true,
+            is_symlink: false,
+        });
+   
+    // walk file tree
+    for thing in WalkDir::new(&*directory)
+        .sort(true)
+        .num_threads(threadct as usize) {
+            let entry = &thing;
+            let path = &entry.as_ref().unwrap().path().display().to_string();
+            let mut tree_entry: TreeEntry = TreeEntry {
+                name: path.clone(),
+                is_dir: false,
+                is_symlink: false,
+            };
+            if entry.as_ref().unwrap().path().is_dir() { 
+                tree_entry.is_dir = true;
             }
-        }
+            //println!("found entry {:?}", tree_entry);
+            entries.push(tree_entry);
     }
+    //println!("done");
 
-    Ok(nestend)
+    Ok(entries)
 }
 
 pub fn branch(matches: &ArgMatches) {
@@ -75,7 +72,7 @@ pub fn branch(matches: &ArgMatches) {
         .unwrap()
         .display()
         .to_string();
-    let mut threadct: i32 = 1;
+    let mut threadct: i32 = 2;
 
     // get directory
     if let Some(dir) = matches.value_of("PATH") {
@@ -106,11 +103,11 @@ pub fn branch(matches: &ArgMatches) {
     }
 
     // print everything
-    let result = tree(directory, threadct, master_depth); 
+    let result = tree(directory.clone(), threadct); 
 
     // match errors, just in case
     match result {
-        Ok(nestend) => print!(" └{}\n", nestend),
+        Ok(entries) => display(entries, directory),
         Err(err) => error(format!(" {:?}", err)),
     }
 }
