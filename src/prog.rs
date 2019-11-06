@@ -12,28 +12,35 @@ use jwalk::{ WalkDir };
 
 use crate::outp::*;
 
-const E: char = 0x1B as char;
+const E: char = 27 as char;
 const branch_str: &str = "├── ";
 
-fn display(thing: &String, isdir: bool) {
+fn display(thing: &String, isdir: bool, master_depth: usize) -> String {
     let path = thing.split("/").collect::<Vec<_>>();
     let mut nesting: String = "".to_string();
+    let mut nestend: String = "".to_string();
 
-    for _ in 0..path.len() {
-        nesting = format!("{}│  ", nesting);
+    for _ in 0..path.len() - master_depth {
+        nesting = nesting + "│  ";
+        nestend = nestend + "──┘";
     }
 
     if isdir {
-        println!(" {}{}[1;34m{}/\n{}0m", nesting, branch_str, E, path[path.len() -1]);
+        print!(" {}{}{}[1;34m{}/\n{}[0m", nesting, branch_str, E, path[path.len() -2], E);
     } else {
-        println!(" {}{}{}\n", nesting, branch_str, path[path.len() -1]);
+        print!(" {}{}{}\n", nesting, branch_str, path[path.len() -1]);
     }
+    
+    return nestend
 }
 
 // get listing of contents of this
 // directory
-fn tree(directory: String, threadct: i32) -> result::Result<(), io::Error> {
-    display(&directory, true);
+fn tree(directory: String, threadct: i32, master_depth: usize) -> result::Result<String, io::Error> {
+    // we will display this when the program has finished
+    let mut nestend: String = "".to_string();
+
+    nestend = display(&directory, true, master_depth);
 
     // jwalk is more a liability than an asset
     // when only one thread is used, so we shall
@@ -44,23 +51,23 @@ fn tree(directory: String, threadct: i32) -> result::Result<(), io::Error> {
             .num_threads(threadct as usize) {
                 let entry = &thing;
                 if entry.as_ref().unwrap().path().is_dir() { 
-                    display(&thing.unwrap().path().display().to_string(), true);
+                    nestend = display(&thing.unwrap().path().display().to_string(), true, master_depth);
                 } else {
-                    display(&thing.unwrap().path().display().to_string(), false);
+                    nestend = display(&thing.unwrap().path().display().to_string(), false, master_depth);
                 }
         }
     } else {
         for thing in fs::read_dir(Path::new(&directory))? {
             let thing = thing?;
             if thing.path().is_dir() {
-                tree(thing.path().display().to_string(), threadct)?;
+                tree(thing.path().display().to_string(), threadct, master_depth)?;
             } else {
-                display(&thing.path().display().to_string(), false);
+                nestend = display(&thing.path().display().to_string(), false, master_depth);
             }
         }
     }
 
-    Ok(())
+    Ok(nestend)
 }
 
 pub fn branch(matches: &ArgMatches) {
@@ -75,6 +82,14 @@ pub fn branch(matches: &ArgMatches) {
         directory = dir.to_string();
     }
 
+    // get number of threads
+    if let Some(thread_count) = matches.value_of("threads") {
+        threadct = thread_count.parse::<i32>().unwrap();
+    }
+
+    // get depth of master directory
+    let master_depth = directory.split("/").collect::<Vec<_>>().len();
+
     // check that directory exists
     if ! fs::metadata(&directory).is_ok() {
         die(format!("directory {} does not exist.", directory));
@@ -85,12 +100,17 @@ pub fn branch(matches: &ArgMatches) {
         die(format!("path {} isn't a directory.", directory));
     }
 
+    // add / to path
+    if directory.chars().last().unwrap() != '/' {
+        directory = directory + "/"
+    }
+
     // print everything
-    let result = tree(directory, threadct);
+    let result = tree(directory, threadct, master_depth); 
 
     // match errors, just in case
     match result {
-        Ok(_) => (),
+        Ok(nestend) => print!(" └{}\n", nestend),
         Err(err) => error(format!(" {:?}", err)),
     }
 }
