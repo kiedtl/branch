@@ -1,5 +1,3 @@
-extern crate jwalk;
-
 use std::result;
 use std::fs;
 use std::io;
@@ -8,29 +6,48 @@ use std::env;
 use std::vec::Vec;
 use std::path::Path;
 use clap::ArgMatches;
-use jwalk::{ WalkDir };
 
 use crate::outp::*;
 
 const E: char = 27 as char;
-const branch_str: &str = "├── ";
+
+const BRANCH_ENTRY_STR: &str = "├── ";
+const BRANCH_LINE_STR: &str = "│   ";
+const BRANCH_LASTENTRY_STR: &str = "└── ";
 
 #[derive(Debug)]
 struct TreeEntry {
     name: String,
     is_dir: bool,
     is_symlink: bool,
+    is_last: bool,
 }
 
 fn display(things: Vec<TreeEntry>, master_dir: String) {
+    // print master directory
+    println!("{}", master_dir);
+
     let mut depth = 0;
     for ctr in 0..things.len() {
         let thing = &things[ctr];
+       
+        // skip main directory, since we already printed that.
+        if thing.name == master_dir {
+            continue;
+        }
+       
+        // print a space
+        print!(" ");
+
         let relative_path = &*thing.name.replace(&master_dir, "");
         let relative_name = &*relative_path.split('/').collect::<Vec<_>>();
         depth = relative_name.len();
-        for _ in 0..depth { print!("\t"); }
-        println!("{}", relative_name[relative_name.len()-1]);
+        for _ in 1..depth { print!("{}", BRANCH_LINE_STR); }
+        if thing.is_last {
+            println!("{}{}", BRANCH_LASTENTRY_STR, relative_name[relative_name.len()-1]);
+        } else {
+            println!("{}{}", BRANCH_ENTRY_STR, relative_name[relative_name.len()-1]);
+        }
     }
     //print!(" └{}\n", nestend);
 }
@@ -39,31 +56,40 @@ fn display(things: Vec<TreeEntry>, master_dir: String) {
 // directory
 fn tree(directory: String, threadct: i32) -> result::Result<Vec<TreeEntry>, io::Error> {
     let mut entries: Vec<TreeEntry> = Vec::new();
+    let mut is_dir_last = false;
     entries.push(TreeEntry {
             name: directory.clone(),
             is_dir: true,
             is_symlink: false,
+            is_last: is_dir_last,
         });
    
     // walk file tree
-    for thing in WalkDir::new(&*directory)
-        .sort(true)
-        .num_threads(threadct as usize) {
-            let entry = &thing;
-            let path = &entry.as_ref().unwrap().path().display().to_string();
-            let mut tree_entry: TreeEntry = TreeEntry {
-                name: path.clone(),
-                is_dir: false,
-                is_symlink: false,
-            };
-            if entry.as_ref().unwrap().path().is_dir() { 
-                tree_entry.is_dir = true;
-            }
-            //println!("found entry {:?}", tree_entry);
-            entries.push(tree_entry);
-    }
-    //println!("done");
+    for thing in fs::read_dir(&*directory)? {
+        let entry = &thing;
+        let path = entry.as_ref().unwrap().path().display().to_string();
+        let mut tree_entry: TreeEntry = TreeEntry {
+            name: path.clone(),
+            is_dir: false,
+            is_symlink: false,
+            is_last: false,
+        };
 
+        // check if path is directory, and if so, 
+        // recursively get contents
+        if entry.as_ref().unwrap().path().is_dir() { 
+            tree_entry.is_dir = true;
+            let newresults = tree(path, threadct)?;
+            for newresult in newresults {
+                entries.push(newresult);
+            }
+        }
+
+        debug(format!("found entry {:?}", tree_entry));
+        entries.push(tree_entry);
+    }
+
+    debug("done".to_owned());
     Ok(entries)
 }
 
