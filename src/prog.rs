@@ -6,7 +6,9 @@ use std::env;
 use std::vec::Vec;
 use std::path::Path;
 use clap::ArgMatches;
+use rayon::prelude::*;
 
+use crate::file::*;
 use crate::outp::*;
 
 const E: char = 27 as char;
@@ -16,103 +18,58 @@ const BRANCH_LINE_STR: &str = "│   ";
 const BRANCH_LASTENTRY_STR: &str = "└── ";
 const BRANCH_NESTEND_STR: &str = "──┴";
 
-#[derive(Debug)]
-struct TreeEntry {
-    name: String,
-    is_dir: bool,
-    is_symlink: bool,
-    is_last: bool,
-}
-
-fn display(things: Vec<TreeEntry>, master_dir: String) {
-    // print master directory
-    println!("{}[1;34m{}{}[0m", E, master_dir, E);
-
-    let mut depth = 0;
-    for ctr in 0..things.len() {
-        // forward slash
-        let mut dirchar = "".to_string();
-
-        let thing = &things[ctr];
-       
-        // skip main directory, since we already printed that.
-        if thing.name == master_dir {
-            continue;
-        }
-       
-        // print a space
-        print!(" ");
-
-        let relative_path = &*thing.name.replace(&master_dir, "");
-        let relative_name = &*relative_path.split('/').collect::<Vec<_>>();
-        depth = relative_name.len();
-        for _ in 1..depth { print!("{}", BRANCH_LINE_STR); }
-
-        // print branch character
-        if thing.is_last {
-            print!("{}", BRANCH_LASTENTRY_STR);
-        } else {
-            print!("{}", BRANCH_ENTRY_STR);
-        }
-
-        // fancy stuff for directories
-        if thing.is_dir {
-            dirchar = "/".to_string();
-            print!("{}[1;34m", E);
-        }
-        
-        // print item
-        print!("{}{}", relative_name[relative_name.len()-1], dirchar);
-
-        // newline and color clear
-        print!("{}[0m\n", E);
-    }
-
-    let mut nestend = "".to_string();
-    for _ in 1..depth { nestend = nestend + BRANCH_NESTEND_STR; }
-        
-    print!(" └{}\n", nestend);
-}
-
 // get listing of contents of this
 // directory
-fn tree(directory: String, threadct: i32) -> result::Result<Vec<TreeEntry>, io::Error> {
-    let mut entries: Vec<TreeEntry> = Vec::new();
-    let mut is_dir_last = false;
-    entries.push(TreeEntry {
-            name: directory.clone(),
-            is_dir: true,
-            is_symlink: false,
-            is_last: is_dir_last,
-        });
-   
+fn tree(directory: &str, prefix: &str, mut treestat: &mut TreeStatistics) -> result::Result<(), io::Error> {
     // walk file tree
-    for thing in fs::read_dir(&*directory)? {
-        let entry = &thing;
-        let path = entry.as_ref().unwrap().path().display().to_string();
-        let mut tree_entry: TreeEntry = TreeEntry {
-            name: path.clone(),
-            is_dir: false,
-            is_symlink: false,
-            is_last: false,
-        };
+    let mut things: Vec<_> = fs::read_dir(&*directory)?.map(|thing| {
+        thing.unwrap().path()
+    }).collect();
+    let mut index = things.len();
+
+    // sort these paths via rayon
+    things.par_sort_unstable_by(|a, b| {
+        let aname = a.file_name().unwrap().to_str().unwrap();
+        let bname = b.file_name().unwrap().to_str().unwrap();
+        aname.cmp(bname)
+    });
+
+    // iter over paths and display 
+    for thing in things {
+        let is_dir: bool = thing.is_dir();
+        let thing = thing.file_name().unwrap().to_str().unwrap();
+        index = index - 1;
+
+        if is_dir {
+            treestat.directories += 1;
+        } else {
+            treestat.files += 1
+        }
+
+        // display
+        if index == 0 {
+            println!("{}{}{}", prefix, BRANCH_LASTENTRY_STR, thing);
+        } else {
+            println!("{}{}{}", prefix, BRANCH_ENTRY_STR, thing);
+        }
 
         // check if path is directory, and if so, 
         // recursively get contents
-        if entry.as_ref().unwrap().path().is_dir() { 
-            tree_entry.is_dir = true;
-            let newresults = tree(path, threadct)?;
-            for newresult in newresults {
-                entries.push(newresult);
-            }
+        if is_dir {
+            // use rayon to (possibly) execute this task in parallel
+            rayon::scope(|s| {
+                s.spawn(|_| {
+                    tree(
+                        &format!("{}/{}", directory, thing), 
+                        &format!("{}{}", prefix, BRANCH_LINE_STR), 
+                        &mut treestat).unwrap();
+                });
+            });
         }
-
-        debug(format!("found entry {:?}", tree_entry));
-        entries.push(tree_entry);
+        debug(format!("found entry {}", thing));
     }
-
     debug("done".to_owned());
-    Ok(entries)
+    Ok(())
 }
 
 pub fn branch(matches: &ArgMatches) {
@@ -120,20 +77,11 @@ pub fn branch(matches: &ArgMatches) {
         .unwrap()
         .display()
         .to_string();
-    let mut threadct: i32 = 2;
 
     // get directory
     if let Some(dir) = matches.value_of("PATH") {
         directory = dir.to_string();
     }
-
-    // get number of threads
-    if let Some(thread_count) = matches.value_of("threads") {
-        threadct = thread_count.parse::<i32>().unwrap();
-    }
-
-    // get depth of master directory
-    let master_depth = directory.split("/").collect::<Vec<_>>().len();
 
     // check that directory exists
     if ! fs::metadata(&directory).is_ok() {
@@ -150,12 +98,15 @@ pub fn branch(matches: &ArgMatches) {
         directory = directory + "/"
     }
 
+    // init tree statistics
+    let mut treestat = TreeStatistics { directories: 0, files: 0 };
+
     // print everything
-    let result = tree(directory.clone(), threadct); 
+    let result = tree(&directory.clone(), "", &mut treestat);
 
     // match errors, just in case
     match result {
-        Ok(entries) => display(entries, directory),
+        Ok(()) => (),
         Err(err) => error(format!(" {:?}", err)),
     }
 }

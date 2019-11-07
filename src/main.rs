@@ -1,8 +1,11 @@
+extern crate rayon;
+extern crate walkdir;
 extern crate clap;
 #[macro_use] extern crate log;
 
 mod prog;
 mod outp;
+mod file;
 
 use clap::{ Arg, App };
 

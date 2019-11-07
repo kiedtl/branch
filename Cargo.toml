@@ -5,5 +5,7 @@ authors = ["Kied Llaentenn <32681240+Kiedtl@users.noreply.github.com>"]
 edition = "2018"
 
 [dependencies]
+walkdir = "2"
+rayon = "1.2.0"
 clap = "^2"
 log = "0.4.8"
