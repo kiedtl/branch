@@ -14,6 +14,7 @@ const E: char = 27 as char;
 const BRANCH_ENTRY_STR: &str = "├── ";
 const BRANCH_LINE_STR: &str = "│   ";
 const BRANCH_LASTENTRY_STR: &str = "└── ";
+const BRANCH_NESTEND_STR: &str = "──┴";
 
 #[derive(Debug)]
 struct TreeEntry {
@@ -25,10 +26,13 @@ struct TreeEntry {
 
 fn display(things: Vec<TreeEntry>, master_dir: String) {
     // print master directory
-    println!("{}", master_dir);
+    println!("{}[1;34m{}{}[0m", E, master_dir, E);
 
     let mut depth = 0;
     for ctr in 0..things.len() {
+        // forward slash
+        let mut dirchar = "".to_string();
+
         let thing = &things[ctr];
        
         // skip main directory, since we already printed that.
@@ -43,13 +47,31 @@ fn display(things: Vec<TreeEntry>, master_dir: String) {
         let relative_name = &*relative_path.split('/').collect::<Vec<_>>();
         depth = relative_name.len();
         for _ in 1..depth { print!("{}", BRANCH_LINE_STR); }
+
+        // print branch character
         if thing.is_last {
-            println!("{}{}", BRANCH_LASTENTRY_STR, relative_name[relative_name.len()-1]);
+            print!("{}", BRANCH_LASTENTRY_STR);
         } else {
-            println!("{}{}", BRANCH_ENTRY_STR, relative_name[relative_name.len()-1]);
+            print!("{}", BRANCH_ENTRY_STR);
         }
+
+        // fancy stuff for directories
+        if thing.is_dir {
+            dirchar = "/".to_string();
+            print!("{}[1;34m", E);
+        }
+        
+        // print item
+        print!("{}{}", relative_name[relative_name.len()-1], dirchar);
+
+        // newline and color clear
+        print!("{}[0m\n", E);
     }
-    //print!(" └{}\n", nestend);
+
+    let mut nestend = "".to_string();
+    for _ in 1..depth { nestend = nestend + BRANCH_NESTEND_STR; }
+        
+    print!(" └{}\n", nestend);
 }
 
 // get listing of contents of this
