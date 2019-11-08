@@ -73,19 +73,26 @@ fn tree(
 
         // display
         //if matches.is_present("dirs") && is_dir || ! matches.is_present("dirs") && ! is_dir {
-            println!("{}{}{}", prefix, current_branch_str, thing);
+            println!(" {}{}{}", prefix, current_branch_str, thing);
         //}
 
         // check if path is directory, and if so, 
         // recursively get contents
         if is_dir {
+            let newprefix;
+            if index == 0 {
+                newprefix = format!("{}{}", prefix, BRANCH_BLANK_STR);
+            } else {
+                newprefix = format!("{}{}", prefix, BRANCH_LINE_STR);
+            }
+
             // use rayon to (possibly) execute this task in parallel
             rayon::scope(|s| {
                 s.spawn(|_| {
                     tree(
                         matches,
                         &format!("{}/{}", directory, thing), 
-                        &format!("{}{}", prefix, BRANCH_LINE_STR), 
+                        &newprefix, 
                         &mut treestat).unwrap();
                 });
             });
@@ -117,13 +124,13 @@ pub fn branch(matches: &ArgMatches) {
         die(format!("path {} isn't a directory.", directory));
     }
 
-    // add / to path
-    if directory.chars().last().unwrap() != '/' {
-        directory = directory + "/"
-    }
-
     // print directory
-    println!("{}[1;34m{}{}[0m\n", E, directory, E);
+    println!("{}[1;34m{}{}[0m/", E, directory, E);
+
+    // add / to directory
+    if directory.chars().last().unwrap() != '/' {
+        directory = directory + "/";
+    }
 
     // init tree statistics
     let mut treestat = TreeStatistics { directories: 0, files: 0 };
