@@ -7,7 +7,7 @@
 
 # hint: it's probably not a good idea to change this!
 BUILDDIR  = build
-PLATFORM  = `gnu -dumpmachine`
+PLATFORM  = `gcc -dumpmachine`
 
 CARGOPTS ?= build -j`nproc` --target-dir ${BUILDDIR}
 CARGOBIN ?= cargo
