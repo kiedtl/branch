@@ -13,10 +13,10 @@ use crate::outp::*;
 
 const E: char = 27 as char;
 
-const BRANCH_ENTRY_STR: &str = "├── ";
-const BRANCH_LINE_STR: &str = "│   ";
-const BRANCH_LASTENTRY_STR: &str = "└── ";
-const BRANCH_NESTEND_STR: &str = "──┴";
+const BRANCH_ENTRY_STR: &str        = "├── ";
+const BRANCH_LINE_STR: &str         = "│   ";
+const BRANCH_LASTENTRY_STR: &str    = "└── ";
+const BRANCH_BLANK_STR: &str        = "    ";
 
 // get listing of contents of this
 // directory
@@ -56,13 +56,14 @@ fn tree(
         let thing = thing.file_name().unwrap().to_str().unwrap();
         index = index - 1;
 
-        // if --dirs is enabled, and this is not a dir, skip.
-        if matches.is_present("dirs") {
-            if is_dir {
-                continue;
-            }
+        // customize this iteration's str
+        let mut current_branch_str;
+        if index == 0 {
+            current_branch_str = BRANCH_LASTENTRY_STR;
+        } else {
+            current_branch_str = BRANCH_ENTRY_STR;
         }
-
+        
         // increment tree statistics
         if is_dir {
             treestat.directories += 1;
@@ -71,11 +72,9 @@ fn tree(
         }
 
         // display
-        if index == 0 {
-            println!("{}{}{}", prefix, BRANCH_LASTENTRY_STR, thing);
-        } else {
-            println!("{}{}{}", prefix, BRANCH_ENTRY_STR, thing);
-        }
+        //if matches.is_present("dirs") && is_dir || ! matches.is_present("dirs") && ! is_dir {
+            println!("{}{}{}", prefix, current_branch_str, thing);
+        //}
 
         // check if path is directory, and if so, 
         // recursively get contents
@@ -123,6 +122,9 @@ pub fn branch(matches: &ArgMatches) {
         directory = directory + "/"
     }
 
+    // print directory
+    println!("{}[1;34m{}{}[0m\n", E, directory, E);
+
     // init tree statistics
     let mut treestat = TreeStatistics { directories: 0, files: 0 };
 
@@ -131,7 +133,7 @@ pub fn branch(matches: &ArgMatches) {
 
     // match errors, just in case
     match result {
-        Ok(()) => println!("{} directories, {} files", treestat.directories, treestat.files),
+        Ok(()) => println!("\n{} directories, {} files", treestat.directories, treestat.files),
         Err(err) => error(format!(" {:?}", err)),
     }
 }
