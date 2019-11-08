@@ -3,28 +3,44 @@
 # https://github.com/lptstr/branch
 #
 
-# variables
-PLATFORM ?= 
-CARGOPTS ?= --target ${TRIPLE} -j$(nproc) --target-dir build
+# ----- VARIABLES -----
+
+# hint: it's probably not a good idea to change this!
+BUILDDIR  = build
+PLATFORM  = `gnu -dumpmachine`
+
+CARGOPTS ?= build -j`nproc` --target-dir ${BUILDDIR}
 CARGOBIN ?= cargo
 
-CARGOPT_RELEASE ?= --release
+CARGOPT_RELEASE ?= ${CARGOPTS} --release
 
 PREFIX ?= /usr
 DESTDIR ?= /bin
 
-# targets
-all: options debug
+# ----- RECIPES -----
+all: options clean debug
+
+clean:
+	rm -f "build/release/branch"
+	rm -f "build/debug/branch"
 
 options:
 	@echo "OPTIONS:"
-	@echo "\tCC\t=\t${CARGOBIN}"
-	@echo "\tCCFLAGS\t=\t${CARGOPTS}"
+	@echo "\tCC\t\t=\t ${CARGOBIN}"
+	@echo "\tCCFLAGS\t\t=\t ${CARGOPTS}"
+	@echo "\tCCFLAGS_RELEASE\t\t= ${CARGOPT_RELEASE}"
+	@echo "\tPLATFORM\t\t= ${PLATFORM}"
 	@echo ""
 
 debug: build/debug/branch
 
 release: build/release/branch
+
+run: release
+	build/release/branch
+
+dev-run: debug
+	build/release/branch
 
 dev-install: debug
 	install -m 755 "build/release/branch" "${PREFIX}${DESTDIR}/branch"
@@ -36,11 +52,11 @@ uninstall:
 	rm -f "${PREFIX}${DESTDIR}/branch"
 
 build/debug/branch:
-	@echo "CC ${CARGOPT}"
-	@${CARGOBIN} ${CARGOPT}
+	@echo "CC ${CARGOPTS}"
+	@${CARGOBIN} ${CARGOPTS}
 
 build/release/branch:
-	@echo "CC ${CARGOPT} ${CARGOPT_RELEASE}"
-	@${CARGOBIN} ${CARGOPT} ${CARGOPT_RELEASE}
+	@echo "CC ${CARGOPT_RELEASE}"
+	@${CARGOBIN} ${CARGOPT_RELEASE}
 
-.PHONY: all options debug release dev-install install uninstall
+.PHONY: all clean options debug release dev-install install uninstall run dev-run
