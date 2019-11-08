@@ -53,6 +53,14 @@ fn tree(
         let thing = thing.file_name().unwrap().to_str().unwrap();
         index = index - 1;
 
+        // if --dirs is enabled, and this is not a dir, skip.
+        if matches.is_present("dirs") {
+            if is_dir {
+                continue;
+            }
+        }
+
+        // increment tree statistics
         if is_dir {
             treestat.directories += 1;
         } else {
@@ -120,7 +128,7 @@ pub fn branch(matches: &ArgMatches) {
 
     // match errors, just in case
     match result {
-        Ok(()) => (),
+        Ok(()) => println!("{} directories, {} files", treestat.directories, treestat.files),
         Err(err) => error(format!(" {:?}", err)),
     }
 }
