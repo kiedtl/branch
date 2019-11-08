@@ -36,12 +36,6 @@ debug: build/debug/branch
 
 release: build/release/branch
 
-run: release
-	build/release/branch
-
-dev-run: debug
-	build/release/branch
-
 dev-install: debug
 	install -m 755 "build/release/branch" "${PREFIX}${DESTDIR}/branch"
 
@@ -59,4 +53,4 @@ build/release/branch:
 	@echo "CC ${CARGOPT_RELEASE}"
 	@${CARGOBIN} ${CARGOPT_RELEASE}
 
-.PHONY: all clean options debug release dev-install install uninstall run dev-run
+.PHONY: all clean options debug release dev-install install uninstall
