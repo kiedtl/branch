@@ -20,13 +20,12 @@ fn main() {
             .help("Sets the input file to use.")
             .required(false)
             .index(1))
-        .arg(Arg::with_name("threads")
-             .help("The number of thread to use to crawl the directory tree.")
-             .value_name("THREADS")
+        .arg(Arg::with_name("all")
+             .help("Print ALL items, including hidden files (but not including items ignored by Git")
              .required(false)
-             .short("t")
-             .long("threads")
-             .takes_value(true))
+             .short("a")
+             .long("all")
+             .takes_value(false))
         .get_matches();
     prog::branch(&matches);
 }

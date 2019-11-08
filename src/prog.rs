@@ -20,7 +20,13 @@ const BRANCH_NESTEND_STR: &str = "──┴";
 
 // get listing of contents of this
 // directory
-fn tree(directory: &str, prefix: &str, mut treestat: &mut TreeStatistics) -> result::Result<(), io::Error> {
+fn tree(
+            matches: &ArgMatches, 
+            directory: &str, 
+            prefix: &str, 
+            mut treestat: &mut TreeStatistics
+       ) -> result::Result<(), io::Error> 
+{
     // walk file tree
     let mut things: Vec<_> = fs::read_dir(&*directory)?.map(|thing| {
         thing.unwrap().path()
@@ -36,6 +42,13 @@ fn tree(directory: &str, prefix: &str, mut treestat: &mut TreeStatistics) -> res
 
     // iter over paths and display 
     for thing in things {
+        // skip this thing if it's hidden and --all is not set
+        if ! matches.is_present("all") {
+            if is_hidden(&thing) {
+                continue;
+            }
+        }
+        
         let is_dir: bool = thing.is_dir();
         let thing = thing.file_name().unwrap().to_str().unwrap();
         index = index - 1;
@@ -60,6 +73,7 @@ fn tree(directory: &str, prefix: &str, mut treestat: &mut TreeStatistics) -> res
             rayon::scope(|s| {
                 s.spawn(|_| {
                     tree(
+                        matches,
                         &format!("{}/{}", directory, thing), 
                         &format!("{}{}", prefix, BRANCH_LINE_STR), 
                         &mut treestat).unwrap();
@@ -102,7 +116,7 @@ pub fn branch(matches: &ArgMatches) {
     let mut treestat = TreeStatistics { directories: 0, files: 0 };
 
     // print everything
-    let result = tree(&directory.clone(), "", &mut treestat);
+    let result = tree(matches, &directory.clone(), "", &mut treestat);
 
     // match errors, just in case
     match result {

@@ -1,4 +1,4 @@
-use std::fs::{ DirEntry };
+use std::path::Path;
 
 // tree statistics
 pub struct TreeStatistics {
@@ -7,9 +7,10 @@ pub struct TreeStatistics {
 }
 
 // check if a file is hidden
-pub fn is_hidden(entry: &DirEntry) -> bool {
+pub fn is_hidden(entry: &Path) -> bool {
     entry.file_name()
-         .to_str()
-         .map(|s| s.starts_with("."))
-         .unwrap_or(false)
+        .unwrap()
+        .to_str()
+        .map(|s| s.starts_with("."))
+        .unwrap_or(false)
 }
