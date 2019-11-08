@@ -47,9 +47,12 @@ fn tree(directory: &str, prefix: &str, mut treestat: &mut TreeStatistics) -> res
         }
 
         // display
+        let next_prefix: &str;
         if index == 0 {
+            next_prefix = "    ";
             println!("{}{}{}", prefix, BRANCH_LASTENTRY_STR, thing);
         } else {
+            next_prefix = BRANCH_LINE_STR;
             println!("{}{}{}", prefix, BRANCH_ENTRY_STR, thing);
         }
 
@@ -61,7 +64,7 @@ fn tree(directory: &str, prefix: &str, mut treestat: &mut TreeStatistics) -> res
                 s.spawn(|_| {
                     tree(
                         &format!("{}/{}", directory, thing), 
-                        &format!("{}{}", prefix, BRANCH_LINE_STR), 
+                        &format!("{}{}", next_prefix, BRANCH_LINE_STR), 
                         &mut treestat).unwrap();
                 });
             });
