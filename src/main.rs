@@ -17,7 +17,7 @@ fn main() {
         .author("Kied Llaentenn")
         .about("tree(1) implemented in Rust")
         .arg(Arg::with_name("PATH")
-            .help("Sets the input file to use.")
+            .help("Sets input directory to use. Default is current directory (`.').")
             .required(false)
             .index(1))
         .arg(Arg::with_name("all")
