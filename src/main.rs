@@ -26,10 +26,14 @@ fn main() {
              .short("a")
              .long("all")
              .takes_value(false))
-        .arg(ARg::with_name("dirs")
+        .arg(Arg::with_name("dirs")
              .help("Print only directories")
              .short("d")
-             .long("dirs")
+             .long("dirs"))
+        .arg(Arg::with_name("nosort")
+             .help("Do not sort files. May improve performance.")
+             .short("S")
+             .long("nosort"))
         .get_matches();
     prog::branch(&matches);
 }

@@ -33,12 +33,15 @@ fn tree(
     }).collect();
     let mut index = things.len();
 
-    // sort these paths via rayon
-    things.par_sort_unstable_by(|a, b| {
-        let aname = a.file_name().unwrap().to_str().unwrap();
-        let bname = b.file_name().unwrap().to_str().unwrap();
-        aname.cmp(bname)
-    });
+    // don't sort if told not to
+    if ! matches.is_present("nosort") {
+        // sort these paths via rayon
+        things.par_sort_unstable_by(|a, b| {
+            let aname = a.file_name().unwrap().to_str().unwrap();
+            let bname = b.file_name().unwrap().to_str().unwrap();
+            aname.cmp(bname)
+        });
+    }
 
     // iter over paths and display 
     for thing in things {
