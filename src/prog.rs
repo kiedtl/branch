@@ -72,9 +72,7 @@ fn tree(
         }
 
         // display
-        //if matches.is_present("dirs") && is_dir || ! matches.is_present("dirs") && ! is_dir {
-            println!(" {}{}{}", prefix, current_branch_str, thing);
-        //}
+        println!(" {}{}{}", prefix, current_branch_str, thing);
 
         // check if path is directory, and if so, 
         // recursively get contents
