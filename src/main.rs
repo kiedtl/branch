@@ -1,11 +1,26 @@
+// for multitasking
+// TODO: use custom implementation.
 extern crate rayon;
-extern crate walkdir;
+
+// argument parsing
+// TODO: switch to a lighter lib.
 extern crate clap;
+
+// for debugging statements via log::debug!()
 #[macro_use] extern crate log;
 
+// main program logic
 mod prog;
+
+// output functions
+// i.e. debug(), error(), die(), etc
 mod outp;
+
+// misc file helper functions
 mod file;
+
+// icons and glyphs
+mod glyf;
 
 use clap::{ Arg, App };
 

@@ -10,6 +10,7 @@ use rayon::prelude::*;
 
 use crate::file::*;
 use crate::outp::*;
+use crate::glyf::*;
 
 const E: char = 27 as char;
 
