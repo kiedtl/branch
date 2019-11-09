@@ -21,7 +21,7 @@ fn main() {
             .required(false)
             .index(1))
         .arg(Arg::with_name("all")
-             .help("Print ALL items, including hidden files (but not including items ignored by Git")
+             .help("Print hidden items.")
              .required(false)
              .short("a")
              .long("all")
@@ -30,6 +30,11 @@ fn main() {
              .help("Do not sort files. May improve performance.")
              .short("S")
              .long("nosort"))
+        .arg(Arg::with_name("level")
+             .help("Maximum directory level to recurse into.")
+             .short("l")
+             .long("level")
+             .takes_value(true))
         .get_matches();
     prog::branch(&matches);
 }

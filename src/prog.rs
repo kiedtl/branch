@@ -13,18 +13,14 @@ use crate::outp::*;
 
 const E: char = 27 as char;
 
-const BRANCH_ENTRY_STR: &str        = "├── ";
-const BRANCH_LINE_STR: &str         = "│   ";
-const BRANCH_LASTENTRY_STR: &str    = "└── ";
-const BRANCH_BLANK_STR: &str        = "    ";
-
 // get listing of contents of this
 // directory
 fn tree(
             matches: &ArgMatches, 
             directory: &str, 
             prefix: &str, 
-            mut treestat: &mut TreeStatistics
+            mut treestat: &mut TreeStatistics,
+            depth: u64
        ) -> result::Result<(), io::Error> 
 {
     // walk file tree
@@ -53,15 +49,17 @@ fn tree(
         }
         
         let is_dir: bool = thing.is_dir();
+        let mut dirchar = " ";
+        
         let thing = thing.file_name().unwrap().to_str().unwrap();
         index = index - 1;
 
         // customize this iteration's str
-        let mut current_branch_str;
+        let current_branch_str;
         if index == 0 {
-            current_branch_str = BRANCH_LASTENTRY_STR;
+            current_branch_str = TreeChars::LastEntry;
         } else {
-            current_branch_str = BRANCH_ENTRY_STR;
+            current_branch_str = TreeChars::Entry;
         }
         
         // increment tree statistics
@@ -71,17 +69,29 @@ fn tree(
             treestat.files += 1
         }
 
+        // bold for directories and other directory-specific things
+        if is_dir {
+            print!("{}[1m", E);
+            dirchar = "/";
+        }
+
         // display
-        println!(" {}{}{}", prefix, current_branch_str, thing);
+        println!("{}{}{}{}{}[0m", prefix, current_branch_str, thing, dirchar, E);
+
+        // maximum level
+        let mut max_level: u64 = std::u64::MAX;
+        if let Some(specified_max_level) = matches.value_of("level") {
+            max_level = specified_max_level.parse::<u64>().unwrap();
+        }
 
         // check if path is directory, and if so, 
         // recursively get contents
-        if is_dir {
+        if is_dir && (max_level != 0 && depth < max_level) {
             let newprefix;
             if index == 0 {
-                newprefix = format!("{}{}", prefix, BRANCH_BLANK_STR);
+                newprefix = format!("{}{}", prefix, TreeChars::Blank);
             } else {
-                newprefix = format!("{}{}", prefix, BRANCH_LINE_STR);
+                newprefix = format!("{}{}", prefix, TreeChars::Line);
             }
 
             // use rayon to (possibly) execute this task in parallel
@@ -91,7 +101,8 @@ fn tree(
                         matches,
                         &format!("{}/{}", directory, thing), 
                         &newprefix, 
-                        &mut treestat).unwrap();
+                        &mut treestat,
+                        depth + 1).unwrap();
                 });
             });
         }
@@ -134,7 +145,7 @@ pub fn branch(matches: &ArgMatches) {
     let mut treestat = TreeStatistics { directories: 0, files: 0 };
 
     // print everything
-    let result = tree(matches, &directory.clone(), "", &mut treestat);
+    let result = tree(matches, &directory.clone(), "", &mut treestat, 0);
 
     // match errors, just in case
     match result {
