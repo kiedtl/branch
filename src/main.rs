@@ -47,7 +47,7 @@ fn main() {
              .long("nosort"))
         .arg(Arg::with_name("level")
              .help("Maximum directory level to recurse into.")
-             .short("l")
+             .short("L")
              .long("level")
              .takes_value(true))
         .get_matches();
