@@ -26,8 +26,8 @@ clean:
 
 options:
 	@echo "OPTIONS:"
-	@echo "\tCC\t\t=\t ${CARGOBIN}"
-	@echo "\tCCFLAGS\t\t=\t ${CARGOPTS}"
+	@echo "\tCC\t\t\t= ${CARGOBIN}"
+	@echo "\tCCFLAGS\t\t\t= ${CARGOPTS}"
 	@echo "\tCCFLAGS_RELEASE\t\t= ${CARGOPT_RELEASE}"
 	@echo "\tPLATFORM\t\t= ${PLATFORM}"
 	@echo ""
