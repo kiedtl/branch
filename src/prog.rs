@@ -58,9 +58,9 @@ fn tree(
         // customize this iteration's str
         let current_branch_str;
         if index == 0 {
-            current_branch_str = TreeChars::LastEntry;
+            current_branch_str = TreeChars::LastEntry.get();
         } else {
-            current_branch_str = TreeChars::Entry;
+            current_branch_str = TreeChars::Entry.get();
         }
         
         // increment tree statistics
@@ -90,9 +90,9 @@ fn tree(
         if is_dir && (max_level != 0 && depth < max_level) {
             let newprefix;
             if index == 0 {
-                newprefix = format!("{}{}", prefix, TreeChars::Blank);
+                newprefix = format!("{}{}", prefix, TreeChars::Blank.get());
             } else {
-                newprefix = format!("{}{}", prefix, TreeChars::Line);
+                newprefix = format!("{}{}", prefix, TreeChars::Line.get());
             }
 
             // use rayon to (possibly) execute this task in parallel

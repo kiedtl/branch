@@ -2,10 +2,6 @@ pub fn debug(stuff: String) {
     log::debug!("=> DBG: {}", stuff);
 }
 
-pub fn info(stuff: String) {
-    println!("=> INFO: {}", stuff)
-}
-
 pub fn error(stuff: String) {
     println!("!> ERR!: {}", stuff);
 }

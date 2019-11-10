@@ -1,5 +1,6 @@
 // Unicode characters used to format
 // the tree view.
+
 #[derive(PartialEq, Debug)]
 pub enum TreeChars {
     Entry,
