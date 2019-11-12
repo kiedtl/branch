@@ -8,3 +8,6 @@ build/*
 
 # SWP files from Vim
 *.swp
+
+# Backup files from Emacs
+.\#*.rs
