@@ -6,16 +6,16 @@
 # ----- VARIABLES -----
 
 # hint: it's probably not a good idea to change this!
-BUILDDIR  = build
-PLATFORM  = `gcc -dumpmachine`
+BUILDDIR  := build
+PLATFORM  := `gcc -dumpmachine`
 
-CARGOPTS ?= build -j`nproc` --target-dir ${BUILDDIR}
-CARGOBIN ?= cargo
+CARGOPTS := build -j`nproc` --target-dir ${BUILDDIR}
+CARGOBIN := cargo
 
-CARGOPT_RELEASE ?= ${CARGOPTS} --release
+CARGOPT_RELEASE := ${CARGOPTS} --release
 
-PREFIX ?= /usr
-DESTDIR ?= /bin
+PREFIX := /usr
+DESTDIR := /bin
 
 # ----- RECIPES -----
 all: options clean debug
@@ -32,12 +32,8 @@ options:
 	@echo "\tPLATFORM\t\t= ${PLATFORM}"
 	@echo ""
 
-debug: build/debug/branch
-
-release: build/release/branch
-
 dev-install: debug
-	install -m 755 "build/release/branch" "${PREFIX}${DESTDIR}/branch"
+	install -m 755 "build/debug/branch" "${PREFIX}${DESTDIR}/branch"
 
 install: release
 	install -m 755 "build/release/branch" "${PREFIX}${DESTDIR}/branch"
@@ -45,12 +41,10 @@ install: release
 uninstall:
 	rm -f "${PREFIX}${DESTDIR}/branch"
 
-build/debug/branch:
+debug:
 	@echo "CC ${CARGOPTS}"
 	@${CARGOBIN} ${CARGOPTS}
 
-build/release/branch:
+release:
 	@echo "CC ${CARGOPT_RELEASE}"
 	@${CARGOBIN} ${CARGOPT_RELEASE}
-
-.PHONY: all clean options debug release dev-install install uninstall
