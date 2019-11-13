@@ -19,13 +19,13 @@ const E: char = 27 as char;
 // get listing of contents of this
 // directory
 fn tree(
-            matches: &ArgMatches, 
-            directory: &str, 
-            prefix: &str, 
+            matches: &ArgMatches,
+            directory: &str,
+            prefix: &str,
             mut treestat: &mut TreeStatistics,
             depth: u64,
             lscolors: &lscolors::LsColors
-       ) -> result::Result<(), io::Error> 
+       ) -> result::Result<(), io::Error>
 {
     // walk file tree
     let mut things: Vec<_> = fs::read_dir(&*directory)?.map(|thing| {
@@ -55,7 +55,7 @@ fn tree(
         }
     }
 
-    // iter over paths and display 
+    // iter over paths and display
     for thing in things {
         // skip this thing if it's hidden and --all is not set
         if ! matches.is_present("all") {
@@ -63,10 +63,10 @@ fn tree(
                 continue;
             }
         }
-        
+
         let is_dir: bool = thing.is_dir();
         let mut dirchar = " ";
-       
+
         let path = thing.display().to_string().clone();
         let thing = thing.file_name().unwrap().to_str().unwrap();
         index = index - 1;
@@ -78,7 +78,7 @@ fn tree(
         } else {
             current_branch_str = TreeChars::Entry.get();
         }
-        
+
         // increment tree statistics and update dirchar
         if is_dir {
             dirchar = "/";
@@ -104,7 +104,7 @@ fn tree(
             max_level = specified_max_level.parse::<u64>().unwrap();
         }
 
-        // check if path is directory, and if so, 
+        // check if path is directory, and if so,
         // recursively get contents
         if is_dir && (max_level != 0 && depth < max_level) {
             let newprefix;
@@ -119,8 +119,8 @@ fn tree(
                 s.spawn(|_| {
                     tree(
                         matches,
-                        &format!("{}/{}", directory, thing), 
-                        &newprefix, 
+                        &format!("{}/{}", directory, thing),
+                        &newprefix,
                         &mut treestat,
                         depth + 1,
                         lscolors).unwrap();
@@ -149,7 +149,7 @@ pub fn branch(matches: &ArgMatches) {
         die(format!("directory {} does not exist.", directory));
     }
 
-    // check that the thing is a directory 
+    // check that the thing is a directory
     if ! Path::new(&directory).is_dir() {
         die(format!("path {} isn't a directory.", directory));
     }
