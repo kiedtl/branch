@@ -1,8 +1,7 @@
-use std::vec::Vec;
-
 // escape character (U+001B)
 pub const E: char = 0x1B as char;
 
+#[allow(dead_code)]
 #[derive(Clone, Copy, Debug)]
 pub enum ColorAttribute {
     Reset,
@@ -17,7 +16,7 @@ pub enum ColorAttribute {
 }
 
 impl ColorAttribute {
-    pub fn get(&self) -> &'static str {
+    pub fn get(&self) -> usize {
         match *self {
             ColorAttribute::Reset           => 0,
             ColorAttribute::Bold            => 1,
@@ -34,9 +33,9 @@ impl ColorAttribute {
 
 #[derive(Clone, Copy, Debug)]
 pub struct ColorFormat {
-    pub Foreground:     usize,
-    pub Background:     usize,
-    pub Attributes:     Vec<ColorAttribute>,     
+    pub foreground:     usize,
+    pub background:     usize,
+    pub attributes:     &'static [ColorAttribute],
 }
 
 #[derive(Clone, Copy, Debug)]
