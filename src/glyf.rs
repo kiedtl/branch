@@ -7,6 +7,7 @@ pub enum TreeChars {
     Line,
     LastEntry,
     Blank,
+    EndChar,
 }
 
 impl TreeChars {
@@ -16,6 +17,7 @@ impl TreeChars {
             TreeChars::Line         => "│   ",
             TreeChars::LastEntry    => "└── ",
             TreeChars::Blank        => "    ",
+            TreeChars::EndChar      => "┘   ",
         }
     }
 }

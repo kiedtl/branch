@@ -173,7 +173,9 @@ pub fn branch(matches: &ArgMatches) {
 
     // match errors, just in case
     match result {
-        Ok(()) => println!("\n{} directories, {} files", treestat.directories, treestat.files),
+        Ok(()) => println!("{}\n\n{} directories, {} files",
+                           treestat.directories, treestat.files,
+                           TreeChars::EndChar.get()),
         Err(err) => error(format!(" {:?}", err)),
     }
 }
