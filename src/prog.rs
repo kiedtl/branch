@@ -55,7 +55,8 @@ fn tree(
         
         let is_dir: bool = thing.is_dir();
         let mut dirchar = " ";
-        
+       
+        let path = thing.display().to_string().clone();
         let thing = thing.file_name().unwrap().to_str().unwrap();
         index = index - 1;
 
@@ -67,8 +68,9 @@ fn tree(
             current_branch_str = TreeChars::Entry.get();
         }
         
-        // increment tree statistics
+        // increment tree statistics and update dirchar
         if is_dir {
+            dirchar = "/";
             treestat.directories += 1;
         } else {
             treestat.files += 1
@@ -77,13 +79,13 @@ fn tree(
 
         // path formatting
         if ! matches.is_present("boring") {
-            let style = lscolors.style_for_path(&*thing)
-                .map(Style::to_ansi_term_style).unwrap_or_default();
-            print!("{}", style.paint(thing));
+            let style = lscolors.style_for_path(path)
+                    .map(Style::to_ansi_term_style).unwrap_or_default();
+            println!("{}{}{}{}{}[0m", prefix, current_branch_str,
+                     style.paint(&*thing), dirchar, E);
+        } else {
+            println!("{}{}{}{}{}[0m", prefix, current_branch_str, thing, dirchar, E);
         }
-
-        // display
-        println!("{}{}{}{}{}[0m", prefix, current_branch_str, thing, dirchar, E);
 
         // maximum level
         let mut max_level: u64 = std::u64::MAX;
