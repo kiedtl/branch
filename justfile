@@ -18,7 +18,7 @@ PREFIX := '/usr'
 DESTDIR := '/bin'
 
 # ----- RECIPES -----
-all: options clean debug
+all: options debug
 
 clean:
 	rm -f "build/release/branch"
