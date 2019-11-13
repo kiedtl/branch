@@ -75,14 +75,18 @@ fn tree(
         }
 
 
-        // path formatting
-        if ! matches.is_present("boring") {
-            let style = lscolors.style_for_path(path)
-                    .map(Style::to_ansi_term_style).unwrap_or_default();
-            println!("{}{}{}{}{}[0m", prefix, current_branch_str,
-                     style.paint(&*thing), dirchar, E);
+        if ! matches.is_present("paths") {
+            // path formatting
+            if ! matches.is_present("boring") {
+                let style = lscolors.style_for_path(path)
+                        .map(Style::to_ansi_term_style).unwrap_or_default();
+                println!("{}{}{}{}{}[0m", prefix, current_branch_str,
+                         style.paint(&*thing), dirchar, E);
+            } else {
+                println!("{}{}{}{}{}[0m", prefix, current_branch_str, thing, dirchar, E);
+            }
         } else {
-            println!("{}{}{}{}{}[0m", prefix, current_branch_str, thing, dirchar, E);
+            println!("{}", path);
         }
 
         // maximum level
@@ -160,9 +164,9 @@ pub fn branch(matches: &ArgMatches) {
 
     // match errors, just in case
     match result {
-        Ok(()) => println!("{}\n\n{} directories, {} files",
-                           treestat.directories, treestat.files,
-                           TreeChars::EndChar.get()),
+        Ok(()) => println!("{}\n\n{} directories, {} files", 
+                           TreeChars::EndChar.get(),
+                           treestat.directories, treestat.files),
         Err(err) => error(format!(" {:?}", err)),
     }
 }
