@@ -26,7 +26,7 @@ impl ColorAttribute {
             ColorAttribute::Blink           => 5,
             ColorAttribute::Swap            => 7,
             ColorAttribute::Hidden          => 8,
-            ColorAttribute::Strikethrough   => 8,
+            ColorAttribute::Strikethrough   => 9,
         }
     }
 }
@@ -50,3 +50,21 @@ pub struct ColorConfig {
     pub special:    ColorFormat,
     pub exe:        ColorFormat,
 }
+
+impl ColorConfig {
+    // retrieve a ColorConfig from LS_COLORS
+    pub fn parse(&self) {
+        // get LS_COLORS
+        let ls_colors_env = std::env::var_os("LS_COLORS");
+        
+        // check if var is null
+        if ls_colors_env == None {
+            // TODO: return default config
+            return;
+        }
+
+        
+
+    }
+}
+
