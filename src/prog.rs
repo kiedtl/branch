@@ -1,7 +1,6 @@
 use std::fs;
 use std::io;
 use std::env;
-use std::path;
 use std::result;
 use std::vec::Vec;
 use std::path::Path;
