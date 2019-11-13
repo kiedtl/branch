@@ -30,7 +30,7 @@ use clap::{ Arg, App };
 const VERSION: &str = "0.1.0";
 
 fn main() {
-    let matches = App::new("branch(1)")
+    let matches = App::new("branch")
         .version(VERSION)
         .author("Kied Llaentenn")
         .about("tree(1) implemented in Rust")
@@ -57,6 +57,10 @@ fn main() {
              .help("Boring mode. Do not format paths with LS_COLORS.")
              .short("b")
              .long("boring"))
+        .arg(Arg::with_name("no-gitignore")
+             .help("Disable .gitignore feature.")
+             .short("G")
+             .long("no-gitignore"))
         .get_matches();
     prog::branch(&matches);
 }

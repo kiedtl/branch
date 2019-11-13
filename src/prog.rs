@@ -1,6 +1,7 @@
 use std::fs;
 use std::io;
 use std::env;
+use std::path;
 use std::result;
 use std::vec::Vec;
 use std::path::Path;
@@ -40,6 +41,18 @@ fn tree(
             let bname = b.file_name().unwrap().to_str().unwrap();
             aname.cmp(bname)
         });
+    }
+
+    // if --no-gitignore flag isn't there,
+    // remove files ignored by git.
+    if ! matches.is_present("no-gitignore") {
+        let presumed_gitignore = format!("{}/.gitignore", directory);
+        if fs::metadata(&presumed_gitignore).is_ok() {
+            let gitignore = gitignore::File::new(Path::new(&presumed_gitignore)).unwrap();
+            things.par_iter()
+                .filter(|thing| !gitignore.is_excluded(thing).unwrap())
+                .collect::<Vec<&path::PathBuf>>();
+        }
     }
 
     // iter over paths and display 
