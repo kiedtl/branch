@@ -1,5 +1,5 @@
 pub fn debug(stuff: String) {
-    log::debug!("=> DBG: {}", stuff);
+    debug!("=> DBG: {}", stuff);
 }
 
 pub fn error(stuff: String) {
