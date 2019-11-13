@@ -41,10 +41,10 @@ install: release
 uninstall:
 	rm -f "{{PREFIX}}{{DESTDIR}}/branch"
 
-debug:
+debug: options
 	@echo "CC {{CARGOPTS}}"
 	@{{CARGOBIN}} {{CARGOPTS}}
 
-release:
+release: options
 	@echo "CC {{CARGOPT_RELEASE}}"
 	@{{CARGOBIN}} {{CARGOPT_RELEASE}}
