@@ -1,10 +1,10 @@
-use std::result;
 use std::fs;
 use std::io;
 use std::env;
-
+use std::result;
 use std::vec::Vec;
 use std::path::Path;
+
 use clap::ArgMatches;
 use rayon::prelude::*;
 use lscolors::{ LsColors, Style };
@@ -22,7 +22,8 @@ fn tree(
             directory: &str, 
             prefix: &str, 
             mut treestat: &mut TreeStatistics,
-            depth: u64
+            depth: u64,
+            lscolors: &lscolors::LsColors
        ) -> result::Result<(), io::Error> 
 {
     // walk file tree
@@ -40,9 +41,6 @@ fn tree(
             aname.cmp(bname)
         });
     }
-
-    // formatting
-    let lscolors = LsColors::from_env().unwrap_or_default();
 
     // iter over paths and display 
     for thing in things {
@@ -111,7 +109,8 @@ fn tree(
                         &format!("{}/{}", directory, thing), 
                         &newprefix, 
                         &mut treestat,
-                        depth + 1).unwrap();
+                        depth + 1,
+                        lscolors).unwrap();
                 });
             });
         }
@@ -150,11 +149,14 @@ pub fn branch(matches: &ArgMatches) {
         directory = directory + "/";
     }
 
+    // get formatting from LS_COLORS
+    let lscolors = LsColors::from_env().unwrap_or_default();
+
     // init tree statistics
     let mut treestat = TreeStatistics { directories: 0, files: 0 };
 
     // print everything
-    let result = tree(matches, &directory.clone(), "", &mut treestat, 0);
+    let result = tree(matches, &directory.clone(), "", &mut treestat, 0, &lscolors);
 
     // match errors, just in case
     match result {
@@ -162,3 +164,4 @@ pub fn branch(matches: &ArgMatches) {
         Err(err) => error(format!(" {:?}", err)),
     }
 }
+
