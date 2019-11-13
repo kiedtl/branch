@@ -43,18 +43,6 @@ fn tree(
         });
     }
 
-    // if --no-gitignore flag isn't there,
-    // remove files ignored by git.
-    if ! matches.is_present("no-gitignore") {
-        let presumed_gitignore = format!("{}/.gitignore", directory);
-        if fs::metadata(&presumed_gitignore).is_ok() {
-            let gitignore = gitignore::File::new(Path::new(&presumed_gitignore)).unwrap();
-            things.par_iter()
-                .filter(|thing| !gitignore.is_excluded(thing).unwrap())
-                .collect::<Vec<&path::PathBuf>>();
-        }
-    }
-
     // iter over paths and display
     for thing in things {
         // skip this thing if it's hidden and --all is not set

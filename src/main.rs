@@ -57,10 +57,10 @@ fn main() {
              .help("Boring mode. Do not format paths with LS_COLORS.")
              .short("b")
              .long("boring"))
-        .arg(Arg::with_name("no-gitignore")
-             .help("Disable .gitignore feature.")
-             .short("G")
-             .long("no-gitignore"))
+        .arg(Arg::with_name("paths")
+             .help("Display raw paths -- don't display in tree format.")
+             .short("p")
+             .long("paths"))
         .get_matches();
     prog::branch(&matches);
 }
