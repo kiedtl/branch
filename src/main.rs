@@ -9,6 +9,9 @@ extern crate clap;
 // for debugging statements via log::debug!()
 #[macro_use] extern crate log;
 
+// formatting paths via ${LS_COLORS}
+extern crate lscolors;
+
 // main program logic
 mod prog;
 
@@ -53,6 +56,10 @@ fn main() {
              .short("L")
              .long("level")
              .takes_value(true))
+        .arg(Arg::with_name("boring")
+             .help("Boring mode. Do not format paths with LS_COLORS.")
+             .short("b")
+             .long("boring"))
         .get_matches();
     prog::branch(&matches);
 }
