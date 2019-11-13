@@ -7,6 +7,7 @@ use std::vec::Vec;
 use std::path::Path;
 use clap::ArgMatches;
 use rayon::prelude::*;
+use lscolors::{ LsColors, Style };
 
 use crate::file::*;
 use crate::outp::*;
@@ -40,6 +41,9 @@ fn tree(
         });
     }
 
+    // formatting
+    let lscolors = LsColors::from_env().unwrap_or_default();
+
     // iter over paths and display 
     for thing in things {
         // skip this thing if it's hidden and --all is not set
@@ -70,10 +74,12 @@ fn tree(
             treestat.files += 1
         }
 
-        // bold for directories and other directory-specific things
-        if is_dir {
-            print!("{}[1m", E);
-            dirchar = "/";
+
+        // path formatting
+        if ! matches.is_present("boring") {
+            let style = lscolors.style_for_path(&*thing)
+                .map(Style::to_ansi_term_style).unwrap_or_default();
+            print!("{}", style.paint(thing));
         }
 
         // display

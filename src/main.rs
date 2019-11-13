@@ -25,9 +25,6 @@ mod file;
 // icons and glyphs
 mod glyf;
 
-// LS_COLORS
-mod clrs;
-
 use clap::{ Arg, App };
 
 const VERSION: &str = "0.1.0";
