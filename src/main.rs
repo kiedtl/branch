@@ -30,10 +30,11 @@ use clap::{ Arg, App };
 const VERSION: &str = "0.1.0";
 
 fn main() {
+    // TODO: add -d/--directories option to only list directories
     let matches = App::new("branch")
         .version(VERSION)
         .author("Kied Llaentenn")
-        .about("tree(1) implemented in Rust")
+        .about("recursively get paths quickly.")
         .arg(Arg::with_name("PATH")
             .help("Sets input directory to use. Default is current directory (`.').")
             .required(false)
@@ -53,14 +54,6 @@ fn main() {
              .short("L")
              .long("level")
              .takes_value(true))
-        .arg(Arg::with_name("boring")
-             .help("Boring mode. Do not format paths with LS_COLORS.")
-             .short("b")
-             .long("boring"))
-        .arg(Arg::with_name("paths")
-             .help("Display raw paths -- don't display in tree format.")
-             .short("p")
-             .long("paths"))
         .get_matches();
     prog::branch(&matches);
 }
