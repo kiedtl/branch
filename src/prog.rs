@@ -52,11 +52,17 @@ fn tree(
         if is_dir {
             treestat.directories += 1;
         } else {
-            treestat.files += 1
+            if ! matches.is_present("dirs") {
+                treestat.files += 1
+            }
         }
 
-
-        println!("{}", path);
+        // don't print stuff if --count is specified
+        if ! matches.is_present("count") {
+            if matches.is_present("dirs") && !is_dir { } else {
+                println!("{}", path);
+            }
+        }
 
         // maximum level
         let mut max_level: u64 = std::u64::MAX;
@@ -105,7 +111,9 @@ pub fn branch(matches: &ArgMatches) {
     }
 
     // print directory
-    println!("{}/", directory);
+    if !matches.is_present("count") {
+        println!("{}/", directory);
+    }
 
     // init tree statistics
     let mut treestat = TreeStatistics { directories: 0, files: 0 };
@@ -117,7 +125,11 @@ pub fn branch(matches: &ArgMatches) {
     match result {
         Ok(()) => {
             if matches.is_present("count") {
-                treestat.print_all();
+                if matches.is_present("dirs") {
+                    treestat.print_dirs();
+                } else {
+                    treestat.print_all();
+                }
             }
         }, 
         Err(err) => error(format!(" {:?}", err)),

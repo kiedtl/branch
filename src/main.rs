@@ -30,7 +30,7 @@ fn main() {
         .author("Kied Llaentenn")
         .about("recursively get paths quickly.")
         .arg(Arg::with_name("PATH")
-            .help("Sets input directory to use. Default is current directory (`.').")
+            .help("Input directory to use. Default is current directory.")
             .required(false)
             .index(1))
         .arg(Arg::with_name("all")
@@ -49,9 +49,13 @@ fn main() {
              .long("level")
              .takes_value(true))
         .arg(Arg::with_name("count")
-             .help("Print count of dirs and files after paths")
+             .help("Print count of dirs and files.")
              .short("c")
              .long("count"))
+        .arg(Arg::with_name("dirs")
+             .help("Print only directories.")
+             .short("d")
+             .long("dirs"))
         .get_matches();
     prog::branch(&matches);
 }
