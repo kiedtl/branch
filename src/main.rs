@@ -9,9 +9,6 @@ extern crate clap;
 // for debugging statements via log::debug!()
 #[macro_use] extern crate log;
 
-// formatting paths via ${LS_COLORS}
-extern crate lscolors;
-
 // main program logic
 mod prog;
 
@@ -21,9 +18,6 @@ mod outp;
 
 // misc file helper functions
 mod file;
-
-// icons and glyphs
-mod glyf;
 
 use clap::{ Arg, App };
 
@@ -45,15 +39,19 @@ fn main() {
              .short("a")
              .long("all")
              .takes_value(false))
-        .arg(Arg::with_name("nosort")
-             .help("Do not sort files. May improve performance.")
-             .short("S")
-             .long("nosort"))
+        .arg(Arg::with_name("sort")
+             .help("Sort files. Decreases performance.")
+             .short("s")
+             .long("sort"))
         .arg(Arg::with_name("level")
              .help("Maximum directory level to recurse into.")
-             .short("L")
+             .short("l")
              .long("level")
              .takes_value(true))
+        .arg(Arg::with_name("count")
+             .help("Print count of dirs and files after paths")
+             .short("c")
+             .long("count"))
         .get_matches();
     prog::branch(&matches);
 }

@@ -7,15 +7,15 @@ pub struct TreeStatistics {
 }
 
 impl TreeStatistics {
-    fn print_dirs(&self) {
+    pub fn print_dirs(&self) {
         println!("{}", self.directories);
     }
-    fn print_files(&self) {
+    pub fn print_files(&self) {
         println!("{}", self.files);
     }
-    fn print_all(&self) {
-        print_dirs();
-        print_files();
+    pub fn print_all(&self) {
+        self.print_dirs();
+        self.print_files();
     }
 }
 
