@@ -32,10 +32,10 @@ options:
 	@echo "\tPLATFORM\t\t= {{PLATFORM}}"
 	@echo ""
 
-dev-install: debug
+dev-install:
 	install -m 755 "build/debug/branch" "{{PREFIX}}{{DESTDIR}}/branch"
 
-install: release
+install:
 	install -m 755 "build/release/branch" "{{PREFIX}}{{DESTDIR}}/branch"
 
 uninstall:

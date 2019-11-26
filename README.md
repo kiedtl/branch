@@ -3,7 +3,8 @@
 ### What?
 Branch is a simple utility that recursively retrieves paths from 
 the provided directory. It's goal is to be as fast or faster than
-`ls -R` or `fine *`. This goal has not yet been attained.
+`ls -R` or `fine *`. Due to branch being extremely overengineered
+and overly complex, this goal has not yet been attained.
 
 ### How?
 Simply run `branch`.
