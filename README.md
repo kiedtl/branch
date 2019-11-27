@@ -66,5 +66,5 @@ $ just install
 Life can be boring 
 
 ### License
-- This program is licensed under the ISC License.
+- This program is licensed under the MIT License.
 - See `LICENSE.md` for more information.
