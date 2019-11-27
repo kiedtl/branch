@@ -1,5 +1,5 @@
 # 
-# branch: a fast, user-friendly version of tree(1)
+# branch: recursively get paths quickly. 
 # https://github.com/lptstr/branch
 #
 
